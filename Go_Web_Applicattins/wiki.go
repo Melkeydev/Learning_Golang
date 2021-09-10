@@ -14,6 +14,7 @@ type Page struct {
 }
 
 
+
 func (p *Page) save() error {
 	filename := p.Title + ".txt"
 	return ioutil.WriteFile(filename, p.Body, 0600)
@@ -29,6 +30,7 @@ func loadPage(title string) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
+
 
 	return &Page{Title: title, Body:body}, nil
 }
@@ -55,6 +57,5 @@ func main() {
 		//log.Fatal(err)
 	//}
 
-	//fmt.Println(string(p2.Body))
 
 }
