@@ -97,9 +97,74 @@ func (m *DBModel) GetJob(id int) (*Job, error) {
   return &job, nil
 }
 
+func (m *DBModel) GetAllUsers() ([]*User, error) {
+  ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select id, username from users order by id`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []*User
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+  return users, nil
+}
 
 
+func (m *DBModel) GetAllJobs() ([]*Job, error) {
+  ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
+	query := `select id, title, company, link, description, total_compensation from jobs order by id`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var jobs []*Job
+
+	for rows.Next() {
+		var job Job 
+		err := rows.Scan(
+			&job.ID,
+			&job.Title,
+			&job.Company,
+			&job.Link,
+			&job.Description,
+			&job.TotalCompensation,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		jobs = append(jobs, &job)
+	}
+
+  return jobs, nil
+}
 
 
 

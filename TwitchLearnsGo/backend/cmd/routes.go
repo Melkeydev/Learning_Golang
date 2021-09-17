@@ -14,5 +14,7 @@ func (app *application) routes() http.Handler {
   router.HandlerFunc(http.MethodPost, "/register/user", app.registerUser)
   router.HandlerFunc(http.MethodPost, "/job/add", app.insertJob)
   router.HandlerFunc(http.MethodGet, "/jobs/:id", app.getJob)
+  router.HandlerFunc(http.MethodGet, "/users/", app.getAllUsers)
+  router.HandlerFunc(http.MethodGet, "/jobs/", app.getAllJobs)
   return router
 }

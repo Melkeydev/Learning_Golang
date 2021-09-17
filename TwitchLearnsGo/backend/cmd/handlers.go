@@ -14,6 +14,10 @@ type AppStatus struct {
   Status string
 }
 
+type Message struct {
+  Message string `json:"message"`
+}
+
 func (app *application) statusHandler(w http.ResponseWriter, r *http.Request) {
   status := struct {
     Status string
@@ -116,7 +120,12 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
   }
 
 
-  js, err := json.MarshalIndent(user, "", "\t")
+  _message := Message{
+    Message: "Successfully registered a user",
+  }
+
+
+  js, err := json.MarshalIndent(_message, "", "\t")
   if err != nil {
     app.logger.Println(err)
   }
@@ -148,7 +157,11 @@ func (app *application) insertJob(w http.ResponseWriter, r *http.Request) {
     app.logger.Println(err)
   }
 
-  js, err := json.MarshalIndent(job, "", "\t")
+  _message := Message{
+    Message: "Successfully posted a job",
+  }
+
+  js, err := json.MarshalIndent(_message, "", "\t")
   if err != nil {
     app.logger.Println(err)
   }
@@ -160,11 +173,35 @@ func (app *application) insertJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getAllUsers(w http.ResponseWriter, r *http.Request) {
+  users, err := app.models.DB.GetAllUsers()
+  if err != nil {
+    app.logger.Println("Could not get all users")
+  }
 
+  js, err := json.MarshalIndent(users, "", "\t")
+  if err != nil {
+    app.logger.Println(err)
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(js)
 }
 
 func (app *application) getAllJobs(w http.ResponseWriter, r *http.Request) {
+  jobs, err := app.models.DB.GetAllJobs()
+  if err != nil {
+    app.logger.Println("Could not get all users")
+  }
 
+  js, err := json.MarshalIndent(jobs, "", "\t")
+  if err != nil {
+    app.logger.Println(err)
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(js)
 }
 
 
