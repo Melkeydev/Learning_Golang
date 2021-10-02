@@ -1,12 +1,12 @@
 package models
 
 import (
-  //_"time"
-  "database/sql"
+	//_"time"
+	"database/sql"
 )
 
 type Models struct {
-  DB DBModel
+	DB DBModel
 }
 
 func NewModels(db *sql.DB) Models {
@@ -16,58 +16,26 @@ func NewModels(db *sql.DB) Models {
 }
 
 type DBModel struct {
-  DB *sql.DB
+	DB *sql.DB
 }
 
 type Job struct {
-  ID int `json:"id"`
-  Title string `json:"title"`
-  Company string `json:"company"`
-  Link string `json:"link"`
-  Description string `json:"description"`
-  TotalCompensation int `json:"total_compensation"`
+	ID                int    `json:"id"`
+	Title             string `json:"title"`
+	Company           string `json:"company"`
+	Link              string `json:"link"`
+	Description       string `json:"description"`
+	TotalCompensation int    `json:"total_compensation"`
 }
 
 type User struct {
-  ID int64 `json:"id"`
-  Username string `json:"username"`
-  Password string `json:"-"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"-"`
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+type Payload struct {
+	One string `json:"one"`
+	Two string `json:"two"`
+	Three string `json:"three"`
+} 

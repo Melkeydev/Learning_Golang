@@ -15,6 +15,8 @@ func (app *application) routes() http.Handler {
   router.HandlerFunc(http.MethodPost, "/job/add", app.insertJob)
   router.HandlerFunc(http.MethodGet, "/jobs/:id", app.getJob)
   router.HandlerFunc(http.MethodGet, "/users/", app.getAllUsers)
-  router.HandlerFunc(http.MethodGet, "/jobs/", app.getAllJobs)
-  return router
+  router.HandlerFunc(http.MethodGet, "/jobs/", app.getAllUsers)
+  router.HandlerFunc(http.MethodPost, "/login/:id", app.signIn)
+  router.HandlerFunc(http.MethodPost, "/form/", app.insertForm)
+  return app.EnableCors(router)
 }
