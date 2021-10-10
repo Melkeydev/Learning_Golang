@@ -290,7 +290,6 @@ func (app *application) insertForm(w http.ResponseWriter, r *http.Request) {
 	formload.Three = payload.Three
 
 	js, err := json.MarshalIndent(formload, "", "\t")
-
 	if err != nil {
 		app.logger.Println(err)
 	}
