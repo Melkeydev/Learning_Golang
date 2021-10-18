@@ -8,6 +8,7 @@ import (
 // Error for GET method
 var (
   ErrRecordNotFound = errors.New("Record not found")
+  ErrEditConflict = errors.New("edit conflict")
 )
 
 // NOTE: This is done differently in UDEMY - please validate
@@ -22,3 +23,4 @@ func NewModels(db *sql.DB) Models {
     Movies: MovieModel{DB: db},
   }
 }
+

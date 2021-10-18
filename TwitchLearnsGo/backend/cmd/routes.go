@@ -8,8 +8,14 @@ import (
 
 func (app *application) routes() http.Handler {
   router := httprouter.New()
+  // Add our custom error handlers 
+  router.NotFound = http.HandlerFunc(app.notFoundResponse)
+  router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-  router.HandlerFunc(http.MethodGet, "/status", app.statusHandler)
+  router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
+
+
+  // Everythin below is going to be a future verson implementin
   router.HandlerFunc(http.MethodGet, "/users/:id", app.getUser)
   router.HandlerFunc(http.MethodPost, "/register/user", app.registerUser)
   router.HandlerFunc(http.MethodPost, "/job/add", app.insertJob)

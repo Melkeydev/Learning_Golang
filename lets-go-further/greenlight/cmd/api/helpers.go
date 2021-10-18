@@ -5,10 +5,12 @@ import (
   "fmt"
   "errors"
   "strings"
+  "net/url"
   "net/http"
   "strconv"
   "encoding/json"
   "github.com/julienschmidt/httprouter"
+  "github.com/amokstakov/greenlight/internal/validator"
 )
 
 func (app *application) readIDParam(r *http.Request) (int64, error) {
@@ -90,7 +92,6 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
     }
   }
 
-
   err = dec.Decode(&struct{}{})
   if err != io.EOF {
     return errors.New("body must only contain single JSON value")
@@ -99,9 +100,46 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
   return nil
 }
 
+// Helper to return a string value from the query
+func (app *application) readString(qs url.Values, key string, defaultValue string) string {
+  s := qs.Get(key)
 
+  if s == "" {
+    return defaultValue
+  }
 
+  return s
+}
 
+// Helper splits query param into a slice
+func (app *application) readCSV(qs url.Values, key string, defaultValue []string) []string{
+  csv := qs.Get(key)
+
+  if csv == "" {
+    return defaultValue
+  }
+
+  return strings.Split(csv, ",")
+}
+
+// Helper and converts to int
+func (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
+  s := qs.Get(key)
+
+  if s == "" {
+    return defaultValue
+  }
+
+  i, err := strconv.Atoi(s)
+  if err != nil {
+    v.AddError(key, "must be an integer value")
+    return defaultValue
+  }
+
+  // i is the converted integer
+  return i
+
+}
 
 
 

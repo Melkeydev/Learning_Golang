@@ -84,8 +84,10 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
     return
   }
 
+  // Retrieve the movie record
   movie, err := app.models.Movies.Get(id)
 
+  // NOTE: need to study this
   if err != nil {
     switch {
     case errors.Is(err, data.ErrRecordNotFound):
@@ -96,24 +98,37 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
     return
   }
 
+  // use a pointer here instead of default values
   var input struct {
-    Title string `json:"title"`
-    Year int32 `json:"year"`
-    Runtime int32 `json:"runtime"`
+    Title *string `json:"title"`
+    Year *int32 `json:"year"`
+    Runtime *int32 `json:"runtime"`
     Genres []string `json:"genres"`
   }
 
+  // Decode JSON
   err = app.readJSON(w, r, &input)
   if err != nil {
     app.badRequestResponse(w, r, err)
     return
   }
 
+  // Explicitly check each input pointer
+  if input.Title != nil {
+    movie.Title = *input.Title
+  }
 
-  movie.Title = input.Title
-  movie.Year = input.Year
-  movie.Runtime = input.Runtime
-  movie.Genres = input.Genres
+  if input.Year != nil {
+    movie.Year = *input.Year
+  }
+
+  if input.Runtime != nil {
+    movie.Runtime = *input.Runtime
+  }
+
+  if input.Genres != nil {
+    movie.Genres = input.Genres
+  }
 
   v := validator.New()
 
@@ -124,7 +139,12 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 
   err = app.models.Movies.Update(movie) 
   if err != nil {
-    app.serverErrorResponse(w, r, err)
+    switch {
+    case errors.Is(err, data.ErrEditConflict):
+      app.editConflictResponse(w, r)
+    default:
+      app.serverErrorResponse(w, r, err)
+    }
     return
   }
 
@@ -158,3 +178,60 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
     app.serverErrorResponse(w, r, err)
   }
 }
+
+// This function reads the url params for us and passes them through our helper functions
+func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
+
+  var input struct {
+    Title string
+    Genres []string
+    data.Filters
+  }
+
+  v := validator.New()
+
+  // Call r.URL.Query() to get the url.Values map
+  qs := r.URL.Query()
+
+  input.Title = app.readString(qs, "title", "")
+  input.Genres = app.readCSV(qs, "genres", []string{})
+
+  input.Filters.Page = app.readInt(qs, "page", 1, v)
+  input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
+
+  // Extract sort query string value
+  input.Filters.Sort = app.readString(qs, "sort", "id")
+  input.Filters.SortSafelist = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
+
+  // Execute the validation check
+  if data.ValidateFilters(v, input.Filters); !v.Valid() {
+    app.failedValidationResponse(w, r, v.Errors)
+    return
+  }
+
+  movies, metadata, err := app.models.Movies.GetAll(input.Title, input.Genres, input.Filters)
+  if err != nil {
+    app.serverErrorResponse(w, r, err)
+    return
+  }
+
+  err = app.writeJSON(w, http.StatusOK, envelope{"movies":movies, "metadata":metadata}, nil)
+  if err != nil {
+    app.serverErrorResponse(w, r, err)
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
