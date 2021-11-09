@@ -14,6 +14,8 @@ var (
 	ErrDuplicateEmail = errors.New("duplicate email")
 )
 
+var AnonymousUser = &User{}
+
 type UserModel struct {
 	DB *sql.DB
 }
@@ -31,6 +33,11 @@ type User struct {
 type password struct {
 	plaintext *string
 	hash      []byte
+}
+
+// check if a User insance is AnonymousUser
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 // insert a user
