@@ -131,3 +131,53 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 	})
 }
 
+func (app *application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
+	fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// use contextGetUser to retrieve information from the user context
+		user := app.contextGetUser(r)
+
+		// if user is not active, call activation required
+		if !user.Activated {
+			app.inactiveAccountResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w,r)
+	})
+
+	return app.requiredAuthenticatedUser(fn)
+}
+
+func (app *application) requiredAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+		
+		if user.IsAnonymous() {
+			app.authenticationRequiredResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc{
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+
+		permissions, err := app.models.Permissions.GetAllForUser(user.ID)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+
+		if !permissions.Include(code) {
+			app.notPermittedResponse(w,r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+
+	return app.requireActivatedUser(fn)
+}
