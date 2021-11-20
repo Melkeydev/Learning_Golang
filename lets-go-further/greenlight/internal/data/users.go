@@ -63,7 +63,7 @@ func (m UserModel) Insert(user *User) error {
 }
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
-	query := `SELECT id, created_at, name, email, password_hash, activated, version FROM users WHERE email = $1` 
+	query := `SELECT id, created_at, name, email, password_hash, activated, version FROM users WHERE email = $1`
 
 	var user User
 
@@ -187,7 +187,7 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 
 	var user User
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second) 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(

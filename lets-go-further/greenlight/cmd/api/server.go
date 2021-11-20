@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func (app *application) serve() error {
@@ -29,7 +29,7 @@ func (app *application) serve() error {
 		s := <-quit
 
 		app.logger.PrintInfo("shutting down server", map[string]string{
-			"signal":s.String(),
+			"signal": s.String(),
 		})
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -41,7 +41,7 @@ func (app *application) serve() error {
 		}
 
 		app.logger.PrintInfo("completing all running background tasks", map[string]string{
-			"addr":server.Addr,
+			"addr": server.Addr,
 		})
 
 		app.wg.Wait()
@@ -59,15 +59,14 @@ func (app *application) serve() error {
 		return err
 	}
 
-	err = <- shutdownError
+	err = <-shutdownError
 	if err != nil {
 		return err
 	}
 
 	app.logger.PrintInfo("stopped server", map[string]string{
-		"addr":server.Addr,
+		"addr": server.Addr,
 	})
 
 	return nil
 }
-

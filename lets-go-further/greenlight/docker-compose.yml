@@ -5,7 +5,7 @@ services:
     container_name: "greenlight"
     image: postgres:12.4-alpine
     volumes:
-      - "./database/postgres-data:/var/lib/postgresql/data:rw"
+      - "../database/postgres-data:/var/lib/postgresql/data:rw"
     ports:
       - "5432:5432"
     environment:

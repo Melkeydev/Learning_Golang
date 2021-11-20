@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"expvar"
 	"flag"
 	"github.com/amokstakov/greenlight/internal/data"
 	"github.com/amokstakov/greenlight/internal/jsonlog"
 	"github.com/amokstakov/greenlight/internal/mailer"
 	_ "github.com/lib/pq"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -47,6 +49,7 @@ type application struct {
 }
 
 func main() {
+	expvar.NewString("version").Set(version)
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4000, "API Server Port")
@@ -84,6 +87,21 @@ func main() {
 	defer db.Close()
 
 	logger.PrintInfo("database connection established", nil)
+
+	// Publish the number of active goroutines.
+	expvar.Publish("goroutines", expvar.Func(func() interface{} {
+		return runtime.NumGoroutine()
+	}))
+
+	// Publish the database connection pool statistics.
+	expvar.Publish("database", expvar.Func(func() interface{} {
+		return db.Stats()
+	}))
+
+	// Publish the current Unix timestamp.
+	expvar.Publish("timestamp", expvar.Func(func() interface{} {
+		return time.Now().Unix()
+	}))
 
 	// Declare instance of the application
 	app := &application{

@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"net/http"
 	"github.com/amokstakov/greenlight/internal/data"
+	"net/http"
 )
 
 // Define a custom contextKey, with the underlying type string
@@ -28,6 +28,3 @@ func (app *application) contextGetUser(r *http.Request) *data.User {
 
 	return user
 }
-
-
-

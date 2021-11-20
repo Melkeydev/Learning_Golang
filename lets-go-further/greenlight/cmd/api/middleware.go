@@ -3,17 +3,18 @@ package main
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/time/rate"
-	"net"
-	"net/http"
-	"sync"
-	"time"
-	"strings"
 	"github.com/amokstakov/greenlight/internal/data"
 	"github.com/amokstakov/greenlight/internal/validator"
+	"golang.org/x/time/rate"
+	//"net"
+	"github.com/tomasen/realip"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
 )
 
-func (app *application) enableCORS(next http.Handler) http.Handler{
+func (app *application) enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
@@ -63,11 +64,7 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if app.config.limiter.enabled {
-			ip, _, err := net.SplitHostPort(r.RemoteAddr)
-			if err != nil {
-				app.serverErrorResponse(w, r, err)
-				return
-			}
+			ip := realip.FromRequest(r)
 
 			mu.Lock()
 
@@ -100,7 +97,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		authorizationHeader := r.Header.Get("Authorization")
 
 		// if authHeader is empty, then we assume that this is from a anonymous user
-		if  authorizationHeader == "" {
+		if authorizationHeader == "" {
 			r = app.contextSetUser(r, data.AnonymousUser)
 			next.ServeHTTP(w, r)
 			return
@@ -132,7 +129,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			}
 			return
 		}
-		
+
 		r = app.contextSetUser(r, user)
 
 		next.ServeHTTP(w, r)
@@ -150,7 +147,7 @@ func (app *application) requireActivatedUser(next http.HandlerFunc) http.Handler
 			return
 		}
 
-		next.ServeHTTP(w,r)
+		next.ServeHTTP(w, r)
 	})
 
 	return app.requiredAuthenticatedUser(fn)
@@ -159,7 +156,7 @@ func (app *application) requireActivatedUser(next http.HandlerFunc) http.Handler
 func (app *application) requiredAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
-		
+
 		if user.IsAnonymous() {
 			app.authenticationRequiredResponse(w, r)
 			return
@@ -169,7 +166,7 @@ func (app *application) requiredAuthenticatedUser(next http.HandlerFunc) http.Ha
 	})
 }
 
-func (app *application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc{
+func (app *application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
 
@@ -180,7 +177,7 @@ func (app *application) requirePermission(code string, next http.HandlerFunc) ht
 		}
 
 		if !permissions.Include(code) {
-			app.notPermittedResponse(w,r)
+			app.notPermittedResponse(w, r)
 			return
 		}
 

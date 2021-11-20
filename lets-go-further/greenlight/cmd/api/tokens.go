@@ -37,7 +37,7 @@ func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, 
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
-			app.invalidCredentialsResponse(w ,r)
+			app.invalidCredentialsResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
@@ -64,7 +64,7 @@ func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, 
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"authentication_token":token}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"authentication_token": token}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
